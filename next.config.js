@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  images: {
-    domains: ['huggingface.co', 'cdn.openai.com', 'ytimg.com'],
-  },
+  output: 'export',
+  distDir: 'out',
 };
 
 module.exports = nextConfig;
