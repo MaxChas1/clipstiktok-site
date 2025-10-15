@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',   // on génère un site statique
-  distDir: 'out'      // dossier de sortie
-};
-module.exports = nextConfig;
+  reactStrictMode: true,
+  // IMPORTANT: pas de "output: 'export'" si tu veux des API routes sur Vercel
+}
+
+module.exports = nextConfig
