@@ -1,29 +1,28 @@
 // pages/api/webhook.js
-const { getJob, putJob } = require('../../lib/store');
+const { updateJob } = require('../../lib/store');
+
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  const secret = req.headers['x-webhook-secret'] || req.headers['x-webhook-secret'.toLowerCase()];
-  if (!process.env.WEBHOOK_SECRET || secret !== process.env.WEBHOOK_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   try {
-    const { jobId, status, result, error } = req.body || {};
-    const job = getJob(jobId);
-    if (!job) return res.status(404).json({ error: 'Job introuvable' });
+    const { id, status, result, secret } = req.body || {};
 
-    job.status = status || job.status;
-    job.result = result || job.result;
-    job.error = error || null;
-    putJob(job);
+    if (!secret || secret !== WEBHOOK_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (!id) return res.status(400).json({ error: 'id manquant' });
+
+    const updated = updateJob(id, { status: status || 'done', result: result || null });
+    if (!updated) return res.status(404).json({ error: 'job introuvable' });
 
     return res.status(200).json({ ok: true });
-  } catch (e) {
-    console.error('Webhook error:', e);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+  } catch (err) {
+    console.error('/api/webhook error:', err);
+    return res.status(500).json({ error: 'Erreur serveur.' });
   }
 };
