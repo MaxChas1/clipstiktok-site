@@ -1,31 +1,37 @@
-import { updateJob } from './_store';
+// pages/api/webhook.js
+const { getJob, putJob } = require('../../lib/store');
 
-export const config = { api: { bodyParser: true } };
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  const sig = req.headers['x-webhook-signature'];
-  if (!process.env.WEBHOOK_SECRET || sig !== process.env.WEBHOOK_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
-    const { jobId, status, result, error } = body;
-    if (!jobId) return res.status(400).json({ error: 'jobId manquant' });
+    const secret = req.headers['x-webhook-secret'];
+    if (!WEBHOOK_SECRET || secret !== WEBHOOK_SECRET) {
+      return res.status(401).json({ error: 'Non autorisé' });
+    }
 
-    if (status === 'completed') updateJob(jobId, { status, result, error: null });
-    else if (status === 'failed') updateJob(jobId, { status, error: error || 'unknown error', result: null });
-    else if (status === 'processing') updateJob(jobId, { status });
-    else return res.status(400).json({ error: 'status invalide' });
+    const { jobId, status, progress, resultUrl, error } = req.body || {};
+    if (!jobId) return res.status(400).json({ error: 'jobId requis.' });
 
+    const existing = getJob(jobId);
+    if (!existing) return res.status(404).json({ error: 'Job inconnu.' });
+
+    const next = {
+      ...existing,
+      status: status || existing.status,
+      result: resultUrl ? { url: resultUrl } : existing.result,
+      progress: typeof progress === 'number' ? progress : existing.progress,
+      error: error || undefined,
+    };
+
+    putJob(next);
     return res.status(200).json({ ok: true });
-  } catch (err) {
-    console.error('POST /api/webhook error', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+  } catch (e) {
+    console.error('Webhook error:', e);
+    return res.status(500).json({ error: 'Erreur serveur' });
   }
-}
+};
