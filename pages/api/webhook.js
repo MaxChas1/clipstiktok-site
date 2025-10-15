@@ -1,27 +1,35 @@
 // pages/api/webhook.js
-import { updateJob, getJob } from '../../lib/store.js';
+import { supabaseAdmin } from '../../lib/db.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  const { id, status, result, error } = req.body || {};
-  if (!id || typeof id !== 'string') {
-    return res.status(400).json({ error: 'id est requis (string).' });
-  }
-  if (!getJob(id)) {
-    return res.status(404).json({ error: 'Job introuvable' });
-  }
+  try {
+    const { id, status, result, error: errMessage } = req.body || {};
+    if (!id) return res.status(400).json({ error: 'id manquant' });
 
-  const patch = {
-    status: status || 'done',
-    result: result ?? null,
-    error: error ?? null,
-    updatedAt: new Date().toISOString(),
-  };
+    const now = new Date().toISOString();
+    const patch = { updated_at: now };
 
-  const updated = updateJob(id, patch);
-  return res.status(200).json({ ok: true, job: updated });
+    if (status) patch.status = status;
+    if (result !== undefined) patch.result = result;
+    if (errMessage) patch.error = errMessage;
+
+    const { data, error } = await supabaseAdmin
+      .from('jobs')
+      .update(patch)
+      .eq('id', id)
+      .select('*')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Job introuvable' });
+
+    return res.status(200).json({ ok: true, job: data });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
 }
