@@ -1,20 +1,18 @@
 // pages/api/jobs/[id].js
-const { getJob } = require('../../../lib/store');
+import { getJob } from '../../../lib/store.js';
 
-module.exports = async function handler(req, res) {
-  const { id } = req.query || {};
-
+export default function handler(req, res) {
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
+    res.setHeader('Allow', ['GET']);
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  try {
-    const job = getJob(id);
-    if (!job) return res.status(404).json({ error: 'job introuvable' });
-    return res.status(200).json(job);
-  } catch (err) {
-    console.error('/api/jobs/[id] error:', err);
-    return res.status(500).json({ error: 'Erreur serveur.' });
+  const { id } = req.query;
+  const job = getJob(id);
+
+  if (!job) {
+    return res.status(404).json({ error: 'Job introuvable' });
   }
-};
+
+  return res.status(200).json(job);
+}
