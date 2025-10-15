@@ -1,26 +1,14 @@
-import { getJob } from '../_store';
+const { getJob } = require('../../../lib/store');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  const { id } = req.query;
+
   if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET']);
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  try {
-    const { id } = req.query;
-    const job = getJob(id);
-    if (!job) return res.status(404).json({ error: 'Job not found' });
+  const job = getJob(id);
+  if (!job) return res.status(404).json({ error: 'Job introuvable' });
 
-    return res.status(200).json({
-      jobId: job.id,
-      status: job.status,
-      result: job.result,
-      error: job.error,
-      updatedAt: job.updatedAt,
-      createdAt: job.createdAt,
-    });
-  } catch (err) {
-    console.error('GET /api/jobs/[id] error', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
+  return res.status(200).json(job);
+};
