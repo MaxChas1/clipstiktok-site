@@ -23,6 +23,7 @@ export default function CreatePage() {
   });
   const [format, setFormat] = useState("portrait");
   const [credits, setCredits] = useState(null);
+  const [generatedClips, setGeneratedClips] = useState(null);
 
   useEffect(() => {
     if (session) {
@@ -66,13 +67,31 @@ export default function CreatePage() {
     );
   }
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (credits !== Infinity) {
       const newCredits = credits - 1;
       setCredits(newCredits);
       localStorage.setItem("userCredits", String(newCredits));
     }
-    alert("Génération des clips lancée !");
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoUrl: decodeURIComponent(video),
+          duration,
+          subtitleType,
+          numClips,
+          clipType,
+          editingOptions,
+          format,
+        }),
+      });
+      const data = await response.json();
+      setGeneratedClips(data.clips);
+    } catch (error) {
+      console.error("Error generating clips:", error);
+    }
   };
 
   return (
@@ -80,10 +99,9 @@ export default function CreatePage() {
       <h1 className="text-4xl font-bold mb-6">Configurer vos clips</h1>
       {video && (
         <p className="mb-4 text-sm">
-          Vidéo sélectionnée : {decodeURIComponent(video)}
+          Vidéo sélectionnée : {decodeURIComponent(video as string)}
         </p>
       )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {/* Durée */}
         <div className="bg-white/10 p-4 rounded-lg">
@@ -94,9 +112,7 @@ export default function CreatePage() {
                 key={opt}
                 onClick={() => setDuration(opt)}
                 className={`px-4 py-2 rounded ${
-                  duration === opt
-                    ? "bg-white text-purple-700"
-                    : "bg-white/20 text-white"
+                  duration === opt ? "bg-white text-purple-700" : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -104,7 +120,6 @@ export default function CreatePage() {
             ))}
           </div>
         </div>
-
         {/* Type de sous-titres */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de sous-titres</h3>
@@ -114,9 +129,7 @@ export default function CreatePage() {
                 key={opt}
                 onClick={() => setSubtitleType(opt)}
                 className={`px-4 py-2 rounded ${
-                  subtitleType === opt
-                    ? "bg-white text-purple-700"
-                    : "bg-white/20 text-white"
+                  subtitleType === opt ? "bg-white text-purple-700" : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -124,7 +137,6 @@ export default function CreatePage() {
             ))}
           </div>
         </div>
-
         {/* Nombre de clips */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Nombre de clips</h3>
@@ -134,9 +146,7 @@ export default function CreatePage() {
                 key={opt}
                 onClick={() => setNumClips(opt)}
                 className={`px-4 py-2 rounded ${
-                  numClips === opt
-                    ? "bg-white text-purple-700"
-                    : "bg-white/20 text-white"
+                  numClips === opt ? "bg-white text-purple-700" : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -144,7 +154,6 @@ export default function CreatePage() {
             ))}
           </div>
         </div>
-
         {/* Type de clip */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de clip</h3>
@@ -154,9 +163,7 @@ export default function CreatePage() {
                 key={opt}
                 onClick={() => setClipType(opt)}
                 className={`px-4 py-2 rounded ${
-                  clipType === opt
-                    ? "bg-white text-purple-700"
-                    : "bg-white/20 text-white"
+                  clipType === opt ? "bg-white text-purple-700" : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -164,7 +171,6 @@ export default function CreatePage() {
             ))}
           </div>
         </div>
-
         {/* Options d'édition */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Options d'édition</h3>
@@ -175,11 +181,11 @@ export default function CreatePage() {
                 onClick={() =>
                   setEditingOptions({
                     ...editingOptions,
-                    [key]: !editingOptions[key],
+                    [key]: !editingOptions[key as keyof typeof editingOptions],
                   })
                 }
                 className={`px-4 py-2 rounded ${
-                  editingOptions[key]
+                  editingOptions[key as keyof typeof editingOptions]
                     ? "bg-white text-purple-700"
                     : "bg-white/20 text-white"
                 }`}
@@ -189,7 +195,6 @@ export default function CreatePage() {
             ))}
           </div>
         </div>
-
         {/* Format */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Format</h3>
@@ -199,9 +204,7 @@ export default function CreatePage() {
                 key={opt}
                 onClick={() => setFormat(opt)}
                 className={`px-4 py-2 rounded ${
-                  format === opt
-                    ? "bg-white text-purple-700"
-                    : "bg-white/20 text-white"
+                  format === opt ? "bg-white text-purple-700" : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -210,13 +213,31 @@ export default function CreatePage() {
           </div>
         </div>
       </div>
-
       <button
         onClick={handleGenerate}
         className="mt-8 bg-white text-purple-700 px-8 py-3 rounded-full shadow-md hover:bg-purple-100 transition"
       >
         Générer mes clips
       </button>
+      {generatedClips && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Clips générés</h2>
+          <ul className="space-y-2">
+            {generatedClips.map((clip) => (
+              <li key={clip.id}>
+                <a
+                  href={clip.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-white"
+                >
+                  Clip {clip.id}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
