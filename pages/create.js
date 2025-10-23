@@ -1,23 +1,27 @@
-import { useSession, signIn } from 'next-auth/react';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+"use client";
+import { useSession, signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function CreatePage() {
-  const { data: session, status } = useSession();
+  const sessionData = useSession?.();
+  const session = sessionData?.data;
+  const status = sessionData?.status;
+
   const router = useRouter();
   const { video } = router.query || {};
 
-  const [duration, setDuration] = useState('30s');
-  const [subtitleType, setSubtitleType] = useState('auto');
-  const [numClips, setNumClips] = useState('3');
-  const [clipType, setClipType] = useState('short');
+  const [duration, setDuration] = useState("30s");
+  const [subtitleType, setSubtitleType] = useState("auto");
+  const [numClips, setNumClips] = useState("3");
+  const [clipType, setClipType] = useState("short");
   const [editingOptions, setEditingOptions] = useState({
     caption: true,
     emojis: false,
     intro: false,
     reframe: false,
   });
-  const [format, setFormat] = useState('portrait');
+  const [format, setFormat] = useState("portrait");
   const [credits, setCredits] = useState(null);
 
   useEffect(() => {
@@ -25,13 +29,13 @@ export default function CreatePage() {
       if (session.user?.email === process.env.NEXT_PUBLIC_CREATOR_EMAIL) {
         setCredits(Infinity);
       } else {
-        const stored = parseInt(localStorage.getItem('userCredits') || '3', 10);
+        const stored = parseInt(localStorage.getItem("userCredits") || "3", 10);
         setCredits(stored);
       }
     }
   }, [session]);
 
-  if (status === 'loading') return null;
+  if (status === "loading") return null;
 
   if (!session) {
     return (
@@ -54,7 +58,7 @@ export default function CreatePage() {
         <p className="mb-4">Vous avez utilisé tous vos clips gratuits.</p>
         <button
           className="bg-white text-purple-700 px-6 py-3 rounded-full shadow-md hover:bg-purple-100 transition"
-          onClick={() => alert('Intégration paiement à venir…')}
+          onClick={() => alert("Intégration paiement à venir…")}
         >
           Acheter des crédits supplémentaires
         </button>
@@ -66,9 +70,9 @@ export default function CreatePage() {
     if (credits !== Infinity) {
       const newCredits = credits - 1;
       setCredits(newCredits);
-      localStorage.setItem('userCredits', String(newCredits));
+      localStorage.setItem("userCredits", String(newCredits));
     }
-    alert('Génération des clips lancée !');
+    alert("Génération des clips lancée !");
   };
 
   return (
@@ -79,19 +83,20 @@ export default function CreatePage() {
           Vidéo sélectionnée : {decodeURIComponent(video)}
         </p>
       )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {/* Durée */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Durée moyenne</h3>
           <div className="flex space-x-2">
-            {['15s', '30s', '60s'].map((opt) => (
+            {["15s", "30s", "60s"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setDuration(opt)}
                 className={`px-4 py-2 rounded ${
                   duration === opt
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -104,14 +109,14 @@ export default function CreatePage() {
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de sous-titres</h3>
           <div className="flex space-x-2">
-            {['auto', 'stylé', 'aucun'].map((opt) => (
+            {["auto", "stylé", "aucun"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setSubtitleType(opt)}
                 className={`px-4 py-2 rounded ${
                   subtitleType === opt
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -124,14 +129,14 @@ export default function CreatePage() {
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Nombre de clips</h3>
           <div className="flex space-x-2">
-            {['1', '3', '5'].map((opt) => (
+            {["1", "3", "5"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setNumClips(opt)}
                 className={`px-4 py-2 rounded ${
                   numClips === opt
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -144,14 +149,14 @@ export default function CreatePage() {
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de clip</h3>
           <div className="flex flex-wrap gap-2">
-            {['short', 'caption', 'reframe', 'dubbing', 'trim'].map((opt) => (
+            {["short", "caption", "reframe", "dubbing", "trim"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setClipType(opt)}
                 className={`px-4 py-2 rounded ${
                   clipType === opt
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -175,8 +180,8 @@ export default function CreatePage() {
                 }
                 className={`px-4 py-2 rounded ${
                   editingOptions[key]
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {key}
@@ -189,14 +194,14 @@ export default function CreatePage() {
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Format</h3>
           <div className="flex space-x-2">
-            {['portrait', 'carré', 'original'].map((opt) => (
+            {["portrait", "carré", "original"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setFormat(opt)}
                 className={`px-4 py-2 rounded ${
                   format === opt
-                    ? 'bg-white text-purple-700'
-                    : 'bg-white/20 text-white'
+                    ? "bg-white text-purple-700"
+                    : "bg-white/20 text-white"
                 }`}
               >
                 {opt}
@@ -216,5 +221,8 @@ export default function CreatePage() {
   );
 }
 
-// 👇 Important : empêche le pré-rendu statique qui causait l’erreur
+// Empêche le prerender côté serveur (cause du crash)
 export const dynamic = "force-dynamic";
+export async function getServerSideProps() {
+  return { props: {} };
+}
