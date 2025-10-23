@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function UploadPage() {
   const [file, setFile] = useState(null);
@@ -6,6 +7,7 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [videoLink, setVideoLink] = useState('');
+  const router = useRouter();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -27,88 +29,97 @@ export default function UploadPage() {
 
   const handleUpload = () => {
     if (!file && !videoLink) return;
+    if (videoLink) {
+      router.push(`/create?video=${encodeURIComponent(videoLink)}`);
+      return;
+    }
     setIsUploading(true);
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const next = prev + 20;
-        if (next >= 100) {
+        if (prev >= 100) {
           clearInterval(interval);
           setIsUploading(false);
+          alert('Upload complet ! Prêt à traiter la vidéo...');
           return 100;
         }
-        return next;
+        return prev + 10;
       });
-    }, 300);
+    }, 500);
+  };
+
+  const resetInputs = () => {
+    setFile(null);
+    setVideoLink('');
+    setPreviewUrl(null);
+    setProgress(0);
+  };
+
+  const renderPreview = () => {
+    if (file) {
+      return <video src={previewUrl} controls className="w-full h-auto rounded-lg" />;
+    }
+    if (videoLink) {
+      const isYouTube = videoLink.includes('youtube.com') || videoLink.includes('youtu.be');
+      if (isYouTube) {
+        const videoIdMatch = videoLink.match(/(?:v=|\/)([A-Za-z0-9_-]{11})/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        return (
+          <iframe
+            src={embedUrl}
+            className="w-full h-64 rounded-lg"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        );
+      }
+      return <video src={videoLink} controls className="w-full h-auto rounded-lg" />;
+    }
+    return null;
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 text-white p-4">
-      <h1 className="text-3xl font-bold mb-4">Uploader une vidéo ou un lien</h1>
-      <div className="bg-white/10 backdrop-blur-md p-6 rounded-lg w-full max-w-md">
-        <label className="block mb-2 font-semibold">Sélectionnez un fichier vidéo</label>
-        <input
-          type="file"
-          accept="video/*"
-          onChange={handleFileChange}
-          className="mb-4 w-full text-gray-900"
-        />
-        <div className="my-4 text-center">— ou —</div>
-        <label className="block mb-2 font-semibold">Collez un lien vidéo (YouTube, .mp4…)</label>
-        <input
-          type="text"
-          value={videoLink}
-          onChange={handleLinkChange}
-          placeholder="https://..."
-          className="w-full p-2 rounded text-gray-900"
-        />
-        {previewUrl && (
-          <div className="mt-4">
-            {file ? (
-              <video src={previewUrl} controls className="w-full rounded"></video>
-            ) : (
-              videoLink.includes('youtube.com') || videoLink.includes('youtu.be') ? (
-                <iframe
-                  src={convertToEmbed(videoLink)}
-                  title="Preview"
-                  className="w-full aspect-video rounded"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              ) : (
-                <video src={previewUrl} controls className="w-full rounded"></video>
-              )
-            )}
-          </div>
-        )}
+    <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gradient-to-r from-purple-600 to-indigo-600 p-4">
+      <div className="bg-white bg-opacity-20 backdrop-blur-md p-8 rounded-xl shadow-lg max-w-md w-full">
+        <h1 className="text-3xl font-bold mb-4 text-center">Uploader une vidéo ou un lien</h1>
+        <div className="mb-4">
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleFileChange}
+            className="w-full text-gray-700 mb-2"
+            disabled={isUploading}
+          />
+          <input
+            type="text"
+            placeholder="Collez un lien vidéo (YouTube ou .mp4)"
+            value={videoLink}
+            onChange={handleLinkChange}
+            className="w-full p-2 rounded mb-2 text-gray-700"
+            disabled={isUploading}
+          />
+          {renderPreview()}
+        </div>
         <button
           onClick={handleUpload}
           disabled={isUploading || (!file && !videoLink)}
-          className="mt-6 w-full bg-purple-800 hover:bg-purple-900 text-white font-semibold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full py-3 rounded-full font-semibold ${
+            isUploading || (!file && !videoLink)
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-purple-600 hover:bg-purple-700'
+          }`}
         >
-          {isUploading ? 'Téléversement...' : 'Téléverser et générer des clips'}
+          {videoLink ? 'Générer des clips' : isUploading ? `Téléversement : ${progress}%` : 'Téléverser et générer des clips'}
         </button>
-        {isUploading && (
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-            <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        )}
+        <button
+          onClick={resetInputs}
+          disabled={isUploading}
+          className="mt-2 w-full py-2 rounded-full bg-gray-500 hover:bg-gray-600"
+        >
+          Réinitialiser
+        </button>
       </div>
     </div>
   );
-}
-
-// Helper to convert YouTube links into embed URL
-function convertToEmbed(url) {
-  try {
-    const ytRegex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/;
-    const match = url.match(ytRegex);
-    if (match && match[1]) {
-      return `https://www.youtube.com/embed/${match[1]}`;
-    }
-  } catch (e) {}
-  return url;
 }
