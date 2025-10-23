@@ -75,90 +75,146 @@ export default function CreatePage() {
     <div className="min-h-screen flex flex-col items-center justify-center py-10 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
       <h1 className="text-4xl font-bold mb-6">Configurer vos clips</h1>
       {video && (
-        <p className="mb-4 text-sm">Vidéo sélectionnée : {decodeURIComponent(video)}</p>
+        <p className="mb-4 text-sm">
+          Vidéo sélectionnée : {decodeURIComponent(video)}
+        </p>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {/* Durée */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Durée moyenne</h3>
           <div className="flex space-x-2">
-            {['15s','30s','60s'].map(opt => (
-              <button key={opt} onClick={() => setDuration(opt)}
-                className={`px-4 py-2 rounded ${duration===opt ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {['15s', '30s', '60s'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setDuration(opt)}
+                className={`px-4 py-2 rounded ${
+                  duration === opt
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {opt}
               </button>
             ))}
           </div>
         </div>
+
         {/* Type de sous-titres */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de sous-titres</h3>
           <div className="flex space-x-2">
-            {['auto','stylé','aucun'].map(opt => (
-              <button key={opt} onClick={() => setSubtitleType(opt)}
-                className={`px-4 py-2 rounded ${subtitleType===opt ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {['auto', 'stylé', 'aucun'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setSubtitleType(opt)}
+                className={`px-4 py-2 rounded ${
+                  subtitleType === opt
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {opt}
               </button>
             ))}
           </div>
         </div>
+
         {/* Nombre de clips */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Nombre de clips</h3>
           <div className="flex space-x-2">
-            {['1','3','5'].map(opt => (
-              <button key={opt} onClick={() => setNumClips(opt)}
-                className={`px-4 py-2 rounded ${numClips===opt ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {['1', '3', '5'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setNumClips(opt)}
+                className={`px-4 py-2 rounded ${
+                  numClips === opt
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {opt}
               </button>
             ))}
           </div>
         </div>
+
         {/* Type de clip */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Type de clip</h3>
           <div className="flex flex-wrap gap-2">
-            {['short','caption','reframe','dubbing','trim'].map(opt => (
-              <button key={opt} onClick={() => setClipType(opt)}
-                className={`px-4 py-2 rounded ${clipType===opt ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {['short', 'caption', 'reframe', 'dubbing', 'trim'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setClipType(opt)}
+                className={`px-4 py-2 rounded ${
+                  clipType === opt
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {opt}
               </button>
             ))}
           </div>
         </div>
+
         {/* Options d'édition */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Options d'édition</h3>
           <div className="flex flex-wrap gap-2">
-            {Object.keys(editingOptions).map(key => (
-              <button key={key}
-                onClick={() => setEditingOptions({...editingOptions, [key]: !editingOptions[key]})}
-                className={`px-4 py-2 rounded ${editingOptions[key] ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {Object.keys(editingOptions).map((key) => (
+              <button
+                key={key}
+                onClick={() =>
+                  setEditingOptions({
+                    ...editingOptions,
+                    [key]: !editingOptions[key],
+                  })
+                }
+                className={`px-4 py-2 rounded ${
+                  editingOptions[key]
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {key}
               </button>
             ))}
           </div>
         </div>
+
         {/* Format */}
         <div className="bg-white/10 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Format</h3>
           <div className="flex space-x-2">
-            {['portrait','carré','original'].map(opt => (
-              <button key={opt} onClick={() => setFormat(opt)}
-                className={`px-4 py-2 rounded ${format===opt ? 'bg-white text-purple-700' : 'bg-white/20 text-white'}`}>
+            {['portrait', 'carré', 'original'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setFormat(opt)}
+                className={`px-4 py-2 rounded ${
+                  format === opt
+                    ? 'bg-white text-purple-700'
+                    : 'bg-white/20 text-white'
+                }`}
+              >
                 {opt}
               </button>
             ))}
           </div>
         </div>
       </div>
-      <button onClick={handleGenerate}
-        className="mt-8 bg-white text-purple-700 px-8 py-3 rounded-full shadow-md hover:bg-purple-100 transition">
+
+      <button
+        onClick={handleGenerate}
+        className="mt-8 bg-white text-purple-700 px-8 py-3 rounded-full shadow-md hover:bg-purple-100 transition"
+      >
         Générer mes clips
-        </button>
+      </button>
     </div>
   );
 }
 
+// 👇 Important : empêche le pré-rendu statique qui causait l’erreur
 export const dynamic = "force-dynamic";
-
