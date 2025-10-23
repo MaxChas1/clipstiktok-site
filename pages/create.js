@@ -155,7 +155,10 @@ export default function CreatePage() {
       <button onClick={handleGenerate}
         className="mt-8 bg-white text-purple-700 px-8 py-3 rounded-full shadow-md hover:bg-purple-100 transition">
         Générer mes clips
-      </button>
+        </button>
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";
+
